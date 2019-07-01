@@ -46,7 +46,7 @@ class AwsBucket
      * @return array
      */
     public function listFiles()
-    {   
+    {
         $s3Client = $this->newS3Client();
 
         return $s3Client->listObjects([
