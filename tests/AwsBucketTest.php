@@ -1,31 +1,47 @@
 <?php
 
-namespace App\Helpers;
+namespace AwsBucketTest;
 
+use AwsBucket\AwsBucket;
 use \Mockery;
 use Aws\S3\S3Client;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class AwsBucketHelperTest extends TestCase
 {
     /**
-     * @covers \App\Helpers\AwsBucketHelper::__construct
+     * @covers AwsBucket\AwsBucket::__construct
      */
     public function testAwsBucketHelperCanBeInstanciated()
     {
         $sqsClientSpy = Mockery::spy(S3Client::class);
-        $helper = new AwsBucketHelper($sqsClientSpy);
-        $this->assertInstanceOf(AwsBucketHelper::class, $helper);
+        $awsBucket = new AwsBucket($sqsClientSpy);
+        $this->assertInstanceOf(AwsBucket::class, $awsBucket);
     }
 
     /**
-     * @covers \App\Helpers\AwsBucketHelper::putFile
+     * @covers AwsBucket\AwsBucket::setS3Config
+     */
+    public function testSetS3Config()
+    {
+        $sqsClientSpy = Mockery::spy(S3Client::class);
+        $awsBucket = new AwsBucket($sqsClientSpy);
+
+        $config = [
+            'bucket' => 'bucket'
+        ];
+
+        $return = $awsBucket->setS3Config($config);
+        $this->assertNull($return);
+    }
+
+    /**
+     * @covers AwsBucket\AwsBucket::putFile
      */
     public function testPutFile()
     {
-
-        file_put_contents('storage/file_name.ext', 'test');
+        file_put_contents('tests/file_name.ext', 'test');
         $result = [
             'ObjectURL' => 'https://url/file.ext',
         ];
@@ -52,13 +68,13 @@ class AwsBucketHelperTest extends TestCase
             ->withAnyArgs()
             ->andReturn($result);
 
-        $helper = new AwsBucketHelper($sqsClientMock);
-        $file = $helper->putFile($uploadedFileMock, 'ext');
+        $awsBucket = new AwsBucket($sqsClientMock);
+        $file = $awsBucket->putFile($uploadedFileMock, 'ext');
         $this->assertEquals($file, 'https://url/file.ext');
     }
 
     /**
-     * @covers \App\Helpers\AwsBucketHelper::listFiles
+     * @covers AwsBucket\AwsBucket::listFiles
      */
     public function testListFiles()
     {
@@ -75,13 +91,13 @@ class AwsBucketHelperTest extends TestCase
             ->withAnyArgs()
             ->andReturn($result);
 
-        $helper = new AwsBucketHelper($sqsClientMock);
-        $list = $helper->listFiles();
+        $awsBucket = new AwsBucket($sqsClientMock);
+        $list = $awsBucket->listFiles();
         $this->assertEquals($list, []);
     }
 
     /**
-     * @covers \App\Helpers\AwsBucketHelper::deleteFile
+     * @covers AwsBucket\AwsBucket::deleteFile
      */
     public function testDeleteFile()
     {
@@ -98,8 +114,8 @@ class AwsBucketHelperTest extends TestCase
             ->withAnyArgs()
             ->andReturn($result);
 
-        $helper = new AwsBucketHelper($sqsClientMock);
-        $deleted = $helper->deleteFile('file.ext');
+        $awsBucket = new AwsBucket($sqsClientMock);
+        $deleted = $awsBucket->deleteFile('file.ext');
         $this->assertEquals($deleted, $result);
     }
 
