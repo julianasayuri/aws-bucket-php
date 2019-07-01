@@ -1,0 +1,27 @@
+#!/bin/sh
+
+echo "Checking PHP Lint in src..."
+find ./src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l -d display_errors=0
+if [ $? != 0 ]
+then
+    echo "Fix the PHP sintax errors before commit."
+    exit 1
+fi
+
+echo "Running Code Sniffer..."
+./vendor/bin/phpcs
+if [ $? != 0 ]
+then
+    echo "Fix the Code Sniffers errors before commit."
+    exit 1
+fi
+
+echo "Running Unit Tests..."
+./vendor/bin/phpunit
+if [ $? != 0 ]
+then
+    echo "Fix the Unit Tests errors before commit."
+    exit 1
+fi
+
+exit $?
