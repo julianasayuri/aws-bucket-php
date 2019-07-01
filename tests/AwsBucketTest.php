@@ -15,25 +15,9 @@ class AwsBucketHelperTest extends TestCase
      */
     public function testAwsBucketHelperCanBeInstanciated()
     {
-        $sqsClientSpy = Mockery::spy(S3Client::class);
-        $awsBucket = new AwsBucket($sqsClientSpy);
+        $configs = [];
+        $awsBucket = new AwsBucket($configs);
         $this->assertInstanceOf(AwsBucket::class, $awsBucket);
-    }
-
-    /**
-     * @covers AwsBucket\AwsBucket::setS3Config
-     */
-    public function testSetS3Config()
-    {
-        $sqsClientSpy = Mockery::spy(S3Client::class);
-        $awsBucket = new AwsBucket($sqsClientSpy);
-
-        $config = [
-            'bucket' => 'bucket'
-        ];
-
-        $return = $awsBucket->setS3Config($config);
-        $this->assertNull($return);
     }
 
     /**
@@ -66,10 +50,17 @@ class AwsBucketHelperTest extends TestCase
         $sqsClientMock->shouldReceive('toArray')
             ->once()
             ->withAnyArgs()
-            ->andReturn($result);
+            ->andReturn($result)
+            ->getMock();
 
-        $awsBucket = new AwsBucket($sqsClientMock);
-        $file = $awsBucket->putFile($uploadedFileMock, 'ext');
+        $awsBucketPartialMock = Mockery::mock(AwsBucket::class)
+            ->makePartial();
+
+        $awsBucketPartialMock->shouldReceive('newS3Client')
+            ->once()
+            ->andReturn($sqsClientMock);
+
+        $file = $awsBucketPartialMock->putFile($uploadedFileMock, 'ext');
         $this->assertEquals($file, 'https://url/file.ext');
     }
 
@@ -89,10 +80,17 @@ class AwsBucketHelperTest extends TestCase
         $sqsClientMock->shouldReceive('toArray')
             ->once()
             ->withAnyArgs()
-            ->andReturn($result);
+            ->andReturn($result)
+            ->getMock();
 
-        $awsBucket = new AwsBucket($sqsClientMock);
-        $list = $awsBucket->listFiles();
+        $awsBucketPartialMock = Mockery::mock(AwsBucket::class)
+            ->makePartial();
+
+        $awsBucketPartialMock->shouldReceive('newS3Client')
+            ->once()
+            ->andReturn($sqsClientMock);
+
+        $list = $awsBucketPartialMock->listFiles();
         $this->assertEquals($list, []);
     }
 
@@ -112,10 +110,17 @@ class AwsBucketHelperTest extends TestCase
         $sqsClientMock->shouldReceive('toArray')
             ->once()
             ->withAnyArgs()
-            ->andReturn($result);
+            ->andReturn($result)
+            ->getMock();
 
-        $awsBucket = new AwsBucket($sqsClientMock);
-        $deleted = $awsBucket->deleteFile('file.ext');
+        $awsBucketPartialMock = Mockery::mock(AwsBucket::class)
+            ->makePartial();
+
+        $awsBucketPartialMock->shouldReceive('newS3Client')
+            ->once()
+            ->andReturn($sqsClientMock);
+
+        $deleted = $awsBucketPartialMock->deleteFile('file.ext');
         $this->assertEquals($deleted, $result);
     }
 

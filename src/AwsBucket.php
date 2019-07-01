@@ -6,25 +6,13 @@ use \Aws\S3\S3Client;
 
 class AwsBucket
 {
-    public $s3Client;
     public $s3Config;
 
     /**
      * Constructor
-     * @param S3Client $s3Client
+     * @param Array $s3Config
      */
-    public function __construct(S3Client $s3Client)
-    {
-        $this->s3Client = $s3Client;
-    }
-
-    /**
-     * Set S3Client Configs
-     * @param string $filePatch patch of the file
-     * @param string $extension file extension
-     * @return string
-     */
-    public function setS3Config(Array $s3Config)
+    public function __construct(array $s3Config)
     {
         $this->s3Config = $s3Config;
     }
@@ -40,7 +28,9 @@ class AwsBucket
         $fileName = md5(rand(1, 999) . $file->getClientOriginalName());
         $extension = $file->getClientOriginalExtension();
 
-        $result = $this->s3Client->putObject([
+        $s3Client = $this->newS3Client();
+
+        $result = $s3Client->putObject([
             'Bucket' => $this->s3Config['bucket'],
             'Key' => $fileName .'.'. $extension,
             'SourceFile' => $file,
@@ -56,8 +46,10 @@ class AwsBucket
      * @return array
      */
     public function listFiles()
-    {
-        return $this->s3Client->listObjects([
+    {   
+        $s3Client = $this->newS3Client();
+
+        return $s3Client->listObjects([
             'Bucket' => $this->s3Config['bucket'],
         ])->toArray();
     }
@@ -69,9 +61,22 @@ class AwsBucket
      */
     public function deleteFile(string $fileName)
     {
-        return $this->s3Client->deleteObject([
+        $s3Client = $this->newS3Client();
+
+        return $s3Client->deleteObject([
             'Bucket' => $this->s3Config['bucket'],
             'Key' => $fileName,
         ])->toArray();
+    }
+
+    /**
+     * @codeCoverageIgnore
+     * method newS3Client
+     * create S3 Client instance
+     * @return \Aws\S3\S3Client
+     */
+    public function newS3Client()
+    {
+        return new S3Client($this->s3Config);
     }
 }
