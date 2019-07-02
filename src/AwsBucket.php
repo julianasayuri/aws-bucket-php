@@ -18,22 +18,22 @@ class AwsBucket
     }
 
     /**
-     * PutFile into AwsBucketHelper
-     * @param string $filePatch patch of the file
+     * PutFile into AwsBucket
+     * @param string $content content of file
+     * @param string $name file name
      * @param string $extension file extension
      * @return string
      */
-    public function putFile($file)
+    public function putFile($content, $name, $extension)
     {
-        $fileName = md5(rand(1, 999) . $file->getClientOriginalName());
-        $extension = $file->getClientOriginalExtension();
+        $fileName = md5(rand(1, 999) . $name);
 
         $s3Client = $this->newS3Client();
 
         $result = $s3Client->putObject([
             'Bucket' => $this->s3Config['bucket'],
             'Key' => $fileName .'.'. $extension,
-            'SourceFile' => $file,
+            'Body' => $content,
             'ContentType' => 'text/csv',
             'ACL' => 'public-read',
         ])->toArray();
@@ -42,11 +42,11 @@ class AwsBucket
     }
 
     /**
-     * List all file of AwsBucketHelper
+     * List all file of AwsBucket
      * @return array
      */
     public function listFiles()
-    {
+    {   
         $s3Client = $this->newS3Client();
 
         return $s3Client->listObjects([
@@ -55,7 +55,7 @@ class AwsBucket
     }
 
     /**
-     * Delete files of AwsBucketHelper
+     * Delete files of AwsBucket
      * @param string $fileName key of the file
      * @return string
      */

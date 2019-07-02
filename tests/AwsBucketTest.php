@@ -25,21 +25,9 @@ class AwsBucketHelperTest extends TestCase
      */
     public function testPutFile()
     {
-        file_put_contents('tests/file_name.ext', 'test');
         $result = [
             'ObjectURL' => 'https://url/file.ext',
         ];
-
-        $uploadedFileMock = Mockery::mock(UploadedFile::class);
-        $uploadedFileMock->shouldReceive('getClientOriginalName')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn('file_name');
-
-        $uploadedFileMock->shouldReceive('getClientOriginalExtension')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn('ext');
 
         $sqsClientMock = Mockery::mock(S3Client::class);
         $sqsClientMock->shouldReceive('putObject')
@@ -60,7 +48,11 @@ class AwsBucketHelperTest extends TestCase
             ->once()
             ->andReturn($sqsClientMock);
 
-        $file = $awsBucketPartialMock->putFile($uploadedFileMock, 'ext');
+        $content = 'this is your file content';
+        $name = 'sample';
+        $extension = 'txt';
+
+        $file = $awsBucketPartialMock->putFile($content, $name, $extension);
         $this->assertEquals($file, 'https://url/file.ext');
     }
 

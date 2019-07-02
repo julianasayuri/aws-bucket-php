@@ -16,6 +16,13 @@ $config = [
 
 $awsBucket = new AwsBucket($config);
 
-$helper = $awsBucket->listFiles();
+$content = 'this is your file content';
+$name = 'sample';
+$extension = 'txt';
 
-print_r($helper);
+$putFile = $awsBucket->putFile($content, $name, $extension);
+print_r($putFile);
+echo PHP_EOL;
+
+$listFiles = $awsBucket->listFiles();
+print_r($listFiles);
